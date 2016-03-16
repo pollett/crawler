@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"net/url"
 )
 
 func usage() {
@@ -21,16 +22,27 @@ func main() {
 	if len(args) < 1 {
 		usage()
 	}
-	crawlStartUri := args[0]
+	crawlStartUri, err := url.Parse(args[0])
+	if err != nil {
+		fmt.Println("Bad start url: ", crawlStartUri)
+		fmt.Println(err.Error())
+		os.Exit(7)
+	}
 
-	links := crawlUri(crawlStartUri)
+	linkQueue := make(chan string)
 
-	links = linkparser.ProcessLinks(links, crawlStartUri)
+	go func() { linkQueue <- crawlStartUri.String() }()
 
-	fmt.Println(links)
+	for link := range linkQueue {
+		found := crawlUri(link)
+		found = linkparser.ProcessLinks(found, crawlStartUri.String())
+		processNewLinks(found, linkQueue)
+
+	}
 }
 
 func crawlUri(uri string) []string {
+	fmt.Println("Crawling ",uri)
 	response, err := http.Get(uri)
 	if err != nil {
 		fmt.Println("Failed to parse ", uri, err.Error())
@@ -39,4 +51,10 @@ func crawlUri(uri string) []string {
 	defer response.Body.Close()
 
 	return linkparser.Parse(response.Body)
+}
+
+func processNewLinks(links []string, queue chan string) {
+	for _, link := range links {
+		go func() { queue <- link }()
+	}
 }
