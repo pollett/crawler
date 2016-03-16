@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 )
 
 var (
 	startUrl *url.URL
 	visited  map[string]bool
+	close    = "#CLOSE#"
 )
 
 func usage() {
@@ -43,7 +45,13 @@ func main() {
 
 	go func() { linkQueue <- startUrl.String() }()
 
+	go waitForEmpty(linkQueue)
+
 	for link := range linkQueue {
+		if link == close {
+			fmt.Println("Crawl complete")
+			return
+		}
 		found := crawlUri(link)
 		found = linkparser.ProcessLinks(found, startUrl.String())
 		processNewLinks(found, linkQueue)
@@ -71,6 +79,21 @@ func processNewLinks(links []string, queue chan string) {
 				go func() { queue <- linkobj.String() }()
 			}
 			visited[linkobj.Path] = true
+		}
+	}
+}
+
+func waitForEmpty(queue chan string) {
+	empty := 0
+	tick := time.Tick(time.Second)
+	for range tick {
+		if len(queue) == 0 {
+			empty++
+		} else {
+			empty = 0
+		}
+		if empty >= 3 {
+			queue <- close
 		}
 	}
 }
