@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	startUrl *url.URL
-	visited  map[string]bool
-	close    = "#CLOSE#"
+	startUrl  *url.URL
+	visited   map[string]bool
+	close     = "#CLOSE#"
+	userAgent = "Crawler Test, see: https://github.com/pollett/crawler"
 )
 
 func usage() {
@@ -62,10 +63,19 @@ func main() {
 
 func crawlUri(uri string) []string {
 	fmt.Println("Crawling, ", uri)
-	response, err := http.Get(uri)
+
+	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		fmt.Println("Failed to parse ", uri, err.Error())
 		os.Exit(6)
+	}
+	req.Header.Set("User-Agent", userAgent)
+
+	client := &http.Client{}
+	response, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Failed to parse ", uri, err.Error())
+		os.Exit(7)
 	}
 	defer response.Body.Close()
 
@@ -83,7 +93,19 @@ func processNewLinks(links []string, queue chan string) {
 			}
 
 			if linkobj.Host == startUrl.Host {
-				headers, err := http.Head(link)
+				req, err := http.NewRequest("HEAD", link, nil)
+				if err != nil {
+					fmt.Println("Failed to parse ", link, err.Error())
+					os.Exit(6)
+				}
+				req.Header.Set("User-Agent", userAgent)
+
+				client := &http.Client{}
+				headers, err := client.Do(req)
+				if err != nil {
+					fmt.Println("Failed to parse ", link, err.Error())
+					os.Exit(7)
+				}
 				if err != nil {
 					fmt.Println("Unable to check link, ", link)
 					continue
