@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  go:
+    build: infra/docker/
+    volumes:
+      - .:/go/src/app
+    working_dir: /go/src/app/src/crawler
+    command: /usr/local/bin/go-reload main.go https://blog.pollett.co.uk
+  test:
+    build: infra/docker/
+    volumes:
+      - .:/go/src/app
+    working_dir: /go/src/app/src/crawler
+    command: go test ./..
