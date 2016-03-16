@@ -21,8 +21,11 @@ func main() {
 	if len(args) < 1 {
 		usage()
 	}
+	crawlStartUri := args[0]
 
-	links := crawlUri(args[0])
+	links := crawlUri(crawlStartUri)
+
+	links = linkparser.ProcessLinks(links, crawlStartUri)
 
 	fmt.Println(links)
 }
