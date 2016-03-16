@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -60,7 +61,7 @@ func main() {
 }
 
 func crawlUri(uri string) []string {
-	fmt.Println("Crawling ", uri)
+	fmt.Println("Crawling, ", uri)
 	response, err := http.Get(uri)
 	if err != nil {
 		fmt.Println("Failed to parse ", uri, err.Error())
@@ -75,10 +76,29 @@ func processNewLinks(links []string, queue chan string) {
 	for _, link := range links {
 		linkobj, err := url.Parse(link)
 		if !visited[linkobj.Path] {
-			if err == nil && linkobj.Host == startUrl.Host {
-				go func() { queue <- linkobj.String() }()
-			}
 			visited[linkobj.Path] = true
+			if err != nil {
+				fmt.Println("Bad link, ", link)
+				continue
+			}
+
+			if linkobj.Host == startUrl.Host {
+				headers, err := http.Head(link)
+				if err != nil {
+					fmt.Println("Unable to check link, ", link)
+					continue
+				}
+
+				contentType := headers.Header.Get("Content-Type")
+
+				if strings.Contains(contentType, "text/html") {
+					go func() { queue <- linkobj.String() }()
+				} else {
+					fmt.Println("Resource, ", link)
+				}
+			} else {
+				fmt.Println("External, ", link)
+			}
 		}
 	}
 }
