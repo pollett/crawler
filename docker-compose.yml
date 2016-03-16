@@ -6,10 +6,10 @@ services:
     volumes:
       - .:/go/src/app
     working_dir: /go/src/app/src/crawler
-    command: /usr/local/bin/go-reload main.go https://blog.pollett.co.uk
+    command: /usr/local/bin/go-reload main.go http://wiprodigital.com/
   test:
     build: infra/docker/
     volumes:
       - .:/go/src/app
     working_dir: /go/src/app/src/crawler
-    command: go test ./..
+    command: go test
