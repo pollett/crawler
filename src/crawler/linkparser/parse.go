@@ -31,6 +31,15 @@ func Parse(body io.Reader) []string{
 					}
 				}
 			}
+
+			if token.Data == "img" {
+				for _, attribute := range token.Attr {
+					if attribute.Key == "src" {
+						links = append(links, attribute.Val)
+					}
+				}
+			}
+
 		}
 	}
 }
