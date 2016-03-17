@@ -6,6 +6,10 @@ Can be run with:
   - Docker: make
     - This will not terminate when finished, just output `Crawl complete` 
 
+Tests can be run with:
+  - go test crawler/...
+  - Run automatically when calling make (but output is near start of stream)
+
 ## Considerations
 
   - Only crawls `a` and `img` tags, trivial to expand linkparser to match more
@@ -16,7 +20,7 @@ Can be run with:
 
 ## Structure
   - Currently a lot of the code is in the main file with only linkparser modularised
-  - Would ideally just use main as an entrypoint then build the crawler functionality into a module
+  - Should just use main as an entrypoint then build the crawler functionality into a module
 
 ## Focus
   - Focus was on future performance and versatility
@@ -25,3 +29,4 @@ Can be run with:
     - Easy to chain multiple queues to give a staged pipeline with more diverse workers
     - Use of the queue and asynchronous message model makes termination a hard problem
       - Workaround waiting for the queue to be empty for a few seconds to end process
+  - Basic tests around linkparser but much more coverage needed around the main crawl functions
