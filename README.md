@@ -30,3 +30,10 @@ Tests can be run with:
     - Use of the queue and asynchronous message model makes termination a hard problem
       - Workaround waiting for the queue to be empty for a few seconds to end process
   - Basic tests around linkparser but much more coverage needed around the main crawl functions
+
+## Output
+  - CSV like
+  - Prefixed with:
+    - Crawling - HTML page to crawl
+    - Resource - Page within current domain but not html
+    - External - Page external to current domain
